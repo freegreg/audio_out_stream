@@ -1,2 +1,4 @@
 #pragma once
-void start_server();
+#include <thread>
+using namespace std;
+thread * start_server();

@@ -2,8 +2,12 @@
 #include <stdio.h>
 #include <windows.h>
 #include "loopback-capture_lib\common.h"
-
+#include <thread>
+using namespace std;
 int _cdecl wmain(int argc, LPCWSTR argv[]) {
+
+	thread * server_thread = start_server();
+	server_thread->join();
 	//HRESULT hr = S_OK;
 
 	//hr = CoInitialize(NULL);
@@ -171,5 +175,5 @@ int _cdecl wmain(int argc, LPCWSTR argv[]) {
 	//	return -__LINE__;
 	//}
 
-	start_server();
+	
 }

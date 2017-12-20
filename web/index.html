@@ -3,6 +3,22 @@
         <title>Simple-Web-Server html-file</title>
     </head>
     <body>
+
         This is the content of index.html Hello!
+        <p id="test_text">This text !!d</p>
     </body>
+
 </html>
+<script>
+    setInterval(getMusAndPlay, 6000);
+    function getMusAndPlay() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("test_text").innerHTML = this.responseText;
+            }
+        };
+        xhttp.open("GET", "mus", true);
+        xhttp.send();
+    }
+</script>

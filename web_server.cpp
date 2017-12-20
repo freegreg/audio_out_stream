@@ -18,9 +18,9 @@ using namespace std;
 using namespace boost::property_tree;
 
 using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
-using HttpClient = SimpleWeb::Client<SimpleWeb::HTTP>;
+//using HttpClient = SimpleWeb::Client<SimpleWeb::HTTP>;
 
-void start_server() {
+thread * start_server() {
   // HTTP-server at port 8080 using 1 thread
   // Unless you do more heavy non-threaded processing in the resources,
   // 1 thread is usually faster than several threads
@@ -167,32 +167,6 @@ void start_server() {
     server.start();
   });
 
-  // Wait for server to start so that the client can connect
-  this_thread::sleep_for(chrono::seconds(1));
-
-  // Client examples
-  HttpClient client("localhost:8080");
-
-  string json_string = "{\"firstName\": \"John\",\"lastName\": \"Smith\",\"age\": 25}";
-
-  // Synchronous request examples
-  try {
-    auto r1 = client.request("GET", "/match/123");
-    cout << r1->content.rdbuf() << endl; // Alternatively, use the convenience function r1->content.string()
-
-    auto r2 = client.request("POST", "/string", json_string);
-    cout << r2->content.rdbuf() << endl;
-  }
-  catch(const SimpleWeb::system_error &e) {
-    cerr << "Client request error: " << e.what() << endl;
-  }
-
-  // Asynchronous request example
-  client.request("POST", "/json", json_string, [](shared_ptr<HttpClient::Response> response, const SimpleWeb::error_code &ec) {
-    if(!ec)
-      cout << response->content.rdbuf() << endl;
-  });
-  client.io_service->run();
-
-  server_thread.join();
+  //server_thread.join();
+  return &server_thread;
 }
