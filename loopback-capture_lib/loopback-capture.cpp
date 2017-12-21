@@ -2,55 +2,12 @@
 
 #include "common.h"
 
-HRESULT LoopbackCapture(
-    IMMDevice *pMMDevice,
-    HMMIO hFile,
-    bool bInt16,
-    HANDLE hStartedEvent,
-    HANDLE hStopEvent,
-    PUINT32 pnFrames
-);
-
-DWORD WINAPI LoopbackCaptureThreadFunction(LPVOID pContext) {
-    LoopbackCaptureThreadFunctionArguments *pArgs =
-        (LoopbackCaptureThreadFunctionArguments*)pContext;
-
-    pArgs->hr = CoInitialize(NULL);
-    if (FAILED(pArgs->hr)) {
-        ERR(L"CoInitialize failed: hr = 0x%08x", pArgs->hr);
-        return 0;
-    }
-    CoUninitializeOnExit cuoe;
-
-    pArgs->hr = LoopbackCapture(
-        pArgs->pMMDevice,
-        pArgs->hFile,
-        pArgs->bInt16,
-        pArgs->hStartedEvent,
-        pArgs->hStopEvent,
-        &pArgs->nFrames
-    );
-
-    return 0;
-}
-
-HRESULT LoopbackCapture(
-    IMMDevice *pMMDevice,
-    HMMIO hFile,
-    bool bInt16,
-    HANDLE hStartedEvent,
-    HANDLE hStopEvent,
-    PUINT32 pnFrames
-) {
+HRESULT LoopbackCapture(IMMDevice *pMMDevice,HMMIO hFile,bool bInt16,PUINT32 pnFrames) {
     HRESULT hr;
 
     // activate an IAudioClient
     IAudioClient *pAudioClient;
-    hr = pMMDevice->Activate(
-        __uuidof(IAudioClient),
-        CLSCTX_ALL, NULL,
-        (void**)&pAudioClient
-    );
+    hr = pMMDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, NULL, (void**)&pAudioClient);
     if (FAILED(hr)) {
         ERR(L"IMMDevice::Activate(IAudioClient) failed: hr = 0x%08x", hr);
         return hr;
@@ -182,12 +139,6 @@ HRESULT LoopbackCapture(
     }
     AudioClientStopOnExit stopAudioClient(pAudioClient);
 
-    SetEvent(hStartedEvent);
-    
-    // loopback capture loop
-    HANDLE waitArray[2] = { hStopEvent, hWakeUp };
-    DWORD dwWaitResult;
-
     bool bDone = false;
     bool bFirstPacket = true;
     for (UINT32 nPasses = 0; !bDone; nPasses++) {
@@ -261,21 +212,6 @@ HRESULT LoopbackCapture(
             return hr;
         }
 
-        dwWaitResult = WaitForMultipleObjects(
-            ARRAYSIZE(waitArray), waitArray,
-            FALSE, INFINITE
-        );
-
-        if (WAIT_OBJECT_0 == dwWaitResult) {
-            LOG(L"Received stop event after %u passes and %u frames", nPasses, *pnFrames);
-            bDone = true;
-            continue; // exits loop
-        }
-
-        if (WAIT_OBJECT_0 + 1 != dwWaitResult) {
-            ERR(L"Unexpected WaitForMultipleObjects return value %u on pass %u after %u frames", dwWaitResult, nPasses, *pnFrames);
-            return E_UNEXPECTED;
-        }
     } // capture loop
 
     return hr;

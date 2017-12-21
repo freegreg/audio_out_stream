@@ -11,10 +11,13 @@ struct LoopbackCaptureThreadFunctionArguments {
     IMMDevice *pMMDevice;
     bool bInt16;
     HMMIO hFile;
-    HANDLE hStartedEvent;
-    HANDLE hStopEvent;
     UINT32 nFrames;
     HRESULT hr;
 };
 
-DWORD WINAPI LoopbackCaptureThreadFunction(LPVOID pContext);
+HRESULT LoopbackCapture(
+	IMMDevice *pMMDevice,
+	HMMIO hFile,
+	bool bInt16,
+	PUINT32 pnFrames
+);

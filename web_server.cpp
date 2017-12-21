@@ -20,7 +20,7 @@ using namespace boost::property_tree;
 using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
 //using HttpClient = SimpleWeb::Client<SimpleWeb::HTTP>;
 
-thread * start_server() {
+void start_server() {
   // HTTP-server at port 8080 using 1 thread
   // Unless you do more heavy non-threaded processing in the resources,
   // 1 thread is usually faster than several threads
@@ -167,6 +167,5 @@ thread * start_server() {
     server.start();
   });
 
-  //server_thread.join();
-  return &server_thread;
+  server_thread.detach();
 }

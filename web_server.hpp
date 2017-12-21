@@ -1,4 +1,4 @@
 #pragma once
-#include <thread>
+#include <windows.h>
 using namespace std;
-thread * start_server();
+void start_server();
